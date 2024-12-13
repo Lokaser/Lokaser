@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lokaser TA - حجز الفنادق</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            direction: rtl;
+            text-align: right;
+            background-color: #f4f4f9;
+            color: #333;
+            padding: 20px;
+        }
+        form {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        input, select, button {
+            width: 25%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+    <script>
+        // Function to calculate the number of nights
+        function calculateNights() {
+            const arrivalDate = new Date(document.getElementById('arrival').value);
+            const departureDate = new Date(document.getElementById('departure').value);
+            if (arrivalDate && departureDate && departureDate > arrivalDate) {
+                const timeDiff = departureDate - arrivalDate;
+                const nights = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+                document.getElementById('nights').value = nights;
+            } else {
+                document.getElementById('nights').value = '';
+            }
+        }
+
+        // Function to update the price based on selected hotel
+        function updatePrice() {
+            const hotel = document.getElementById('hotel').value;
+            const priceField = document.getElementById('price_per_night');
+            let price;
+
+            // Set price based on hotel
+            switch (hotel) {
+                case 'Hotel1':
+                    price = 100;  // Example price for Hotel1
+                    break;
+                case 'Hotel2':
+                    price = 150;  // Example price for Hotel2
+                    break;
+                case 'Hotel3':
+                    price = 200;  // Example price for Hotel3
+                    break;
+                default:
+                    price = 0;
+            }
+
+            // Set price per night field
+            priceField.value = price;
+        }
+
+        // Function to handle form submission
+        async function handleSubmit(event) {
+            event.preventDefault();
+
+            const formData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                nationality: document.getElementById('nationality').value,
+                hotel: document.getElementById('hotel').value,
+                room_type: document.getElementById('room').value,
+                price_per_night: document.getElementById('price_per_night').value,
+                arrival_date: document.getElementById('arrival').value,
+                departure_date: document.getElementById('departure').value,
+                nights: document.getElementById('nights').value,
+                adults: document.getElementById('adults').value,
+                payment_method: document.getElementById('payment').value,
+                comments: document.getElementById('comments').value
+            };
+
+            try {
+                const response = await fetch("YOUR_GOOGLE_SCRIPT_URL", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(formData),
+                });
+
+                const result = await response.json();
+                if (result.status === "success") {
+                    alert(`تم إرسال الحجز بنجاح! رقم التأكيد: ${result.confirmation_no}`);
+                } else {
+                    alert(`خطأ: ${result.message}`);
+                }
+            } catch (error) {
+                alert(`فشل الإرسال: ${error.message}`);
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Lokaser TA - حجز الفنادق</h1>
+    <form onsubmit="handleSubmit(event)">
+        <label for="name">الاسم</label>
+        <input type="text" id="name" name="name" required>
+
+        <label for="email">البريد الإلكتروني</label>
+        <input type="email" id="email" name="email" required>
+
+        <label for="nationality">الجنسية</label>
+        <input type="text" id="nationality" name="nationality" required>
+
+        <label for="hotel">الفندق</label>
+        <select id="hotel" name="hotel" onchange="updatePrice()" required>
+            <option value="Hotel1">فندق 1</option>
+            <option value="Hotel2">فندق 2</option>
+            <option value="Hotel3">فندق 3</option>
+        </select>
+
+        <label for="room">نوع الغرفة</label>
+        <select id="room" name="room" required>
+            <option value="single">فردي</option>
+            <option value="double">مزدوج</option>
+            <option value="suite">جناح</option>
+        </select>
+
+        <label for="price_per_night">السعر لكل ليلة</label>
+        <input type="text" id="price_per_night" name="price_per_night" readonly>
+
+        <label for="arrival">تاريخ الوصول</label>
+        <input type="date" id="arrival" name="arrival_date" onchange="calculateNights()" required>
+
+        <label for="departure">تاريخ المغادرة</label>
+        <input type="date" id="departure" name="departure_date" onchange="calculateNights()" required>
+
+        <label for="nights">عدد الليالي</label>
+        <input type="text" id="nights" name="nights" readonly>
+
+        <label for="adults">عدد البالغين</label>
+        <input type="number" id="adults" name="adults" min="1" required>
+
+        <label for="payment">طريقة الدفع</label>
+        <select id="payment" name="payment_method" required>
+            <option value="credit_card">بطاقة ائتمان</option>
+            <option value="paypal">بايبال</option>
+        </select>
+
+        <label for="comments">تعليقات</label>
+        <textarea id="comments" name="comments"></textarea>
+
+        <button type="submit">إرسال الحجز</button>
+    </form>
+</body>
+</html>
